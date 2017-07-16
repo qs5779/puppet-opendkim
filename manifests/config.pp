@@ -123,27 +123,47 @@ class opendkim::config inherits opendkim {
       mode    => '0600',
     }
 
-
-    file { "${opendkim::configdir}/keys/${key['domain']}/${key['selector']}":
-      ensure  => 'file',
-      content => $key['privatekey'],
-      owner   => $opendkim::user,
-      group   => $opendkim::group,
-      mode    => '0600',
+    if $key['privatekey'] !~ /^puppet:/ {
+      file { "${opendkim::configdir}/keys/${key['domain']}/${key['selector']}":
+        ensure  => 'file',
+        content => $key['privatekey'],
+        owner   => $opendkim::user,
+        group   => $opendkim::group,
+        mode    => '0600',
+      }
+    }
+    else {
+      file { "${opendkim::configdir}/keys/${key['domain']}/${key['selector']}":
+        ensure => 'file',
+        source => $key['privatekey'],
+        owner  => $opendkim::user,
+        group  => $opendkim::group,
+        mode   => '0600',
+      }
     }
 
     $selector = $key['selector']
     $domain = $key['domain']
     $publickey = $key['publickey']
 
-    file { "${opendkim::configdir}/keys/${key['domain']}/${key['selector']}.txt":
-      ensure  => 'file',
-      content => template('opendkim/public-rsa-key.erb'),
-      owner   => $opendkim::user,
-      group   => $opendkim::group,
-      mode    => '0600',
+    if $publickey !~ /^puppet:/ {
+      file { "${opendkim::configdir}/keys/${key['domain']}/${key['selector']}.txt":
+        ensure  => 'file',
+        content => template('opendkim/public-rsa-key.erb'),
+        owner   => $opendkim::user,
+        group   => $opendkim::group,
+        mode    => '0600',
+      }
     }
-
+    else {
+      file { "${opendkim::configdir}/keys/${key['domain']}/${key['selector']}.txt":
+        ensure => 'file',
+        source => $publickey,
+        owner  => $opendkim::user,
+        group  => $opendkim::group,
+        mode   => '0600',
+      }
+    }
   }
 
 }
